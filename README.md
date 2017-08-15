@@ -11,7 +11,7 @@ model.sampling()
 print(model.fit)
 ```
 
-What makes `pystan_time_series` useful is that you can turn on options to modify to the model to do everything and the kitchen sink. [This Jupyter notebook](https://github.com/jeffalstott/pystan_time_series/blob/master/Examples_and_Tests.ipynb) shows the different types of models, how to use the Python interface to call them, and how the model correctly recovers the parameters of simulated data. Below is an overview of the tricks that `pystan_time_series` can do.
+What makes `pystan_time_series` useful is that you can turn on options to modify to the model to do everything and the kitchen sink. [The Jupyter notebook Examples_and_Tests](https://github.com/jeffalstott/pystan_time_series/blob/master/Examples_and_Tests.ipynb) shows the different types of models, how to use the Python interface to call them, and how the model correctly recovers the parameters of simulated data. Below is an overview of the tricks that `pystan_time_series` can do.
 
 
 
