@@ -55,14 +55,14 @@ model = TimeSeriesModel(Y=Y, p=1, q=2)
 model = TimeSeriesModel(Y=Y, p=[1,5,10], q=[2,7])
 ```
 
-- Multi-dimensional time series, which can be modeled as affecting are modeled together as a VAR model
+- Multi-dimensional time series, which can be modeled as affecting each other as a VAR model
 ```
 D = 3 #Number of dimensions for each time series
 Y = [data of shape (K,T,D)]
-model = TimeSeriesModel(Y=Y, p=1, q=1) #All 3 dimensions affect each other at a lag of 1 (p). The moving average (q) element is separate for each dimension
+model = TimeSeriesModel(Y=Y, p=1, q=1) #All 3 dimensions affect each other at a lag of 1 (p). The moving average (q) element is separate for each dimension.
 ```
 
-- Setting one or more dimensions to be difference
+- Setting one or more dimensions to be difference (An I(1) model)
 ```
 D = 3
 Y = [data of shape (K,T,D)]
