@@ -1,9 +1,7 @@
 # pystan_time_series
 Basic time series modeling with [Stan](http://mc-stan.org/) and [Pystan](https://pystan.readthedocs.io/).
 
-This is a small set of code to make it easy to do basic time series modeling with `stan`, and particularly with the `pystan` interface. It includes a bunch of options to do everything and the kitchen sink.
-
-[This Jupyter notebook](https://github.com/jeffalstott/pystan_time_series/blob/master/Examples_and_Tests.ipynb) shows how to use the Python interface. In brief:
+This is a small set of code to make it easy to do basic time series modeling with `stan`, and particularly with the `pystan` interface. In brief:
 
 ```
 from pystan_time_series import TimeSeriesModel
@@ -13,14 +11,18 @@ model.sampling()
 print(model.fit)
 ```
 
+What makes `pystan_time_series` useful is that you can turn on options to modify to the model to do everything and the kitchen sink. [This Jupyter notebook](https://github.com/jeffalstott/pystan_time_series/blob/master/Examples_and_Tests.ipynb) shows the different types of models, how to use the Python interface to call them, and how the model correctly recovers the parameters of simulated data. Below is an overview of the tricks that `pystan_time_series` can do.
+
+
+
 Things that `pystan_time_series` can model easily
 ====
 - Many different time series
 ```
-T = 100 #Number of time poitns
+T = 100 #Number of time points
 K = 10 #Number of time series
-Y = rand(T,K) #
-model = TimeSeriesModel(Y=Y)
+Y = rand(T,K)
+model = TimeSeriesModel(Y=Y) 
 ```
 
 - missing data
