@@ -99,6 +99,32 @@ Y[150:] = nan
 model = TimeSeriesModel(Y=Y, p=[1,5,10], q=[1,5], partial_pooling=True, use_student=True, difference=[1,0,0,0,0], monotonic=[1,0,0,0,0])
 ```
 
+Priors
+===
+Each parameter is modeled as a prior distribution with a scale and location:
+```
+mu ~ normal(mu_prior_scale, mu_prior_location);
+```
+There are default values for these prior scales/locations (all rather uninformative). Upon creating the model the prior values, along with everything else that will go into stan, is in `model.stan_data`
+```
+model = TimeSeriesModel(Y=Y)
+model.stan_data['mu_prior_location']
+> 0
+```
+Changes to these priors can be made when creating the model:
+
+```
+model = TimeSeriesModel(Y=Y, mu_prior_location=5)
+model.stan_data['mu_prior_location']
+> 5
+```
+It's possible to sample from the priors directly, without updating to any data. 
+```
+model = TimeSeriesModel(Y=Y, return_priors=True)
+```
+The results are the distribution of the priors, which can be visualized, compared to the distribution of the posteriors after updating to data, etc.
+
+
 Under the hood with the Stan models
 ====
 [This directory](https://github.com/jeffalstott/pystan_time_series/tree/master/stan_models) has a collection of time series models as individual `.stan` files, each paired with a `.py` file that `TimeSeriesModel` calls for easier interfacing with the model. However, only one of these models actually matters: [VAR.stan](https://github.com/jeffalstott/pystan_time_series/blob/master/stan_models/VAR.stan). This model is fairly complex, but it implements all the capabilities of all the other models, which can then be turned on or off by passing options to the model as data. This is the `stan` model that `TimeSeriesModel` actually uses by default. The other `.stan` files are included for people that want to peruse the code of a simpler implementation, so they may better learn a model or `stan`.
