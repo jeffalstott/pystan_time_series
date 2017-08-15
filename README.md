@@ -21,13 +21,13 @@ Things that `pystan_time_series` can model easily
 ```
 T = 100 #Number of time points
 K = 10 #Number of time series
-Y = rand(T,K)
+Y = data of shape (T,K)]
+
 model = TimeSeriesModel(Y=Y) 
 ```
 
 - missing data
 ```
-Y = rand(T,K)
 Y[5:10] = nan #Missing data are passed as nans
 model = TimeSeriesModel(Y=Y)
 model.sampling()
@@ -55,25 +55,25 @@ model = TimeSeriesModel(Y=Y, p=1, q=2)
 model = TimeSeriesModel(Y=Y, p=[1,5,10], q=[2,7])
 ```
 
-- Multi-dimensional time series, which are modeled as a VAR model
+- Multi-dimensional time series, which can be modeled as affecting are modeled together as a VAR model
 ```
 D = 3 #Number of dimensions for each time series
-Y = rand(K,T,D)
-model = TimeSeriesModel(Y=Y)
+Y = [data of shape (K,T,D)]
+model = TimeSeriesModel(Y=Y, p=1, q=1) #All 3 dimensions affect each other at a lag of 1 (p). The moving average (q) element is separate for each dimension
 ```
 
 - Setting one or more dimensions to be difference
 ```
 D = 3
-Y = rand(K,T,D)
+Y = [data of shape (K,T,D)]
 model = TimeSeriesModel(Y=Y, difference=[0,1,0]) #Says the 2nd dimension should be differenced before modeling, making it an I(1) model
 ```
 
 - Setting one or more dimensions to be monotonic
 ```
 D = 3
-Y = rand(K,T,D)
-model = TimeSeriesModel(Y=Y, monotnoic=[0,0,1]) #Says the 3rd dimension is monotonically increasing
+Y = [data of shape (K,T,D)]
+model = TimeSeriesModel(Y=Y, monotonic=[0,0,1]) #Says the 3rd dimension is monotonically increasing
 ```
 
 - Partial pooling of parameter estimates across the K time series
@@ -86,6 +86,18 @@ model = TimeSeriesModel(Y=Y, use_partial_pooling=True)
 model = TimeSeriesModel(Y=Y, use_student=True)
 ```
 
+- Do something crazy
+```
+K = 100
+T = 200
+D = 5
+Y = [your data of shape (K,T,D)]
+Y[:5] = nan
+Y[100:105] = nan
+Y[150:] = nan
+
+model = TimeSeriesModel(Y=Y, p=[1,5,10], q=[1,5], partial_pooling=True, use_student=True, difference=[1,0,0,0,0], monotonic=[1,0,0,0,0])
+```
 
 Under the hood with the Stan models
 ====
