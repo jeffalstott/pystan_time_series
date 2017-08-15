@@ -21,7 +21,7 @@ Things that `pystan_time_series` can model easily
 ```
 T = 100 #Number of time points
 K = 10 #Number of time series
-Y = data of shape (T,K)]
+Y = [data of shape (T,K)]
 
 model = TimeSeriesModel(Y=Y) 
 ```
