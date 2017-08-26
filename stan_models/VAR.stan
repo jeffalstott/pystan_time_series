@@ -169,8 +169,8 @@ parameters {
     matrix<lower=-1, upper=1>[Q,D] theta[K];
     matrix<lower=0>[K,D*use_student] nu;
 
-    cholesky_factor_corr[use_partial_pooling*(2+P*D*D+Q+use_student)] L_Omega;
-    vector<lower = 0>[use_partial_pooling*(2+P*D*D+Q+use_student)] tau;
+    cholesky_factor_corr[use_partial_pooling*(2*D+P*D*D+Q*D+use_student)] L_Omega;
+    vector<lower = 0>[use_partial_pooling*(2*D+P*D*D+Q*D+use_student)] tau;
     vector[D*use_partial_pooling] mu_mu;
     vector<lower = 0>[D*use_partial_pooling] mu_sigma;
     matrix[D,D] mu_phi[P*use_partial_pooling];
@@ -266,9 +266,6 @@ transformed parameters {
         }
     }
     }
-
-
-
 }
 
 model {
@@ -376,17 +373,6 @@ model {
                 }
                 err[t] = Y_for_fitting[k,t] - expected_value[t];
             }
-
-//            if (Q>1){
-//                for (t in 2:Q){
-//                    expected_value[t] = expected_value[t] + columns_dot_product(theta[k, 1:t-1],err[1:t-1]);
-//                    err[t] = Y_for_fitting[k,t] - expected_value[t];
-//                }
-//            }
-//            for (t in Q+1:T){
-//                expected_value[t] = expected_value[t] + columns_dot_product(theta[k],err[t-Q:t-1]);
-//                err[t] = Y_for_fitting[k,t] - expected_value[t];
-//                }
         }
         for (d in 1:D){
             if (use_student==1){
