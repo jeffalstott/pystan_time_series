@@ -31,7 +31,7 @@
 # Initial setup
 # ===
 
-# In[2]:
+# In[1]:
 
 ### Initial setup
 get_ipython().magic('pylab inline')
@@ -40,7 +40,7 @@ import seaborn as sns
 sns.set_color_codes()
 
 
-# In[3]:
+# In[2]:
 
 from pystan_time_series import TimeSeriesModel
 
@@ -48,7 +48,7 @@ from pystan_time_series import TimeSeriesModel
 # Stan settings and testing functions
 # ===
 
-# In[4]:
+# In[3]:
 
 ### Stan settings and testing functions
 n_jobs = 4
@@ -242,7 +242,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma')]
 test_model_fit(model.fit, parameter_pairs, max_depth=max_depth)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -307,7 +307,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (phi, 'phi')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -347,7 +347,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (phi, 'phi')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -389,7 +389,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -432,7 +432,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs, max_depth=max_depth)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -478,7 +478,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (phi, 'phi'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs, max_depth=max_depth)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -520,7 +520,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -571,7 +571,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -617,7 +617,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(nu, 'nu'), (mu, 'mu'), (sigma, 'sigma'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -685,7 +685,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (theta, 'theta'), (tau, 'tau')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
@@ -699,7 +699,7 @@ for i in range(min(5,n)):
 # 
 # $\vec{Y}_{t} = [Y_{1,t}, Y_{2,t}, Y_{3,t}...Y_{D,t}]$ 
 # 
-# $\vec{Y}_{t} \sim \vec{\mu} + \vec{\epsilon} + \vec{\theta} \vec{\epsilon}_{t-1} + \mathbf{P}\vec{Y}_{t-1}$
+# $\vec{Y}_{t} \sim \vec{\mu} + \vec{\epsilon}_{t} + \vec{\theta} \vec{\epsilon}_{t-1} + \mathbf{P}\vec{Y}_{t-1}$
 # 
 # $\vec{\epsilon}_t \sim \text{normal}(0, \vec{\sigma})$
 # 
@@ -713,7 +713,7 @@ for i in range(min(5,n)):
 # - $\mathbf{P} \sim normal(0,4)$
 # - $\vec{\theta} \sim normal(0,4)$
 
-# In[31]:
+# In[5]:
 
 D = 3
 
@@ -734,7 +734,7 @@ for n_i in range(n):
         for p_i in range(p):
             Y[n_i,t_i] +=  dot(phi[p_i],Y[n_i,t_i-p_i])
 
-# Y[20:25] = nan
+Y[:,20:25] = nan
 
 model = TimeSeriesModel(Y=Y, p=p, q=q)
 start_time = time()
@@ -745,7 +745,7 @@ print("Fitting took %.2f minutes"%((finish_time-start_time)/60))
 parameter_pairs = [(mu, 'mu'), (sigma, 'sigma'), (phi, 'phi'), (theta, 'theta')]
 test_model_fit(model.fit, parameter_pairs)
 
-print(model.fit)
+# print(model.fit)
 
 for i in range(min(5,n)):
     figure()
