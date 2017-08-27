@@ -38,6 +38,11 @@ get_ipython().magic('pylab inline')
 import pandas as pd
 import seaborn as sns
 sns.set_color_codes()
+from matplotlib import rc
+# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+rc('font',**{'family':'serif','serif':['DejaVu Sans']})
+# rc('text', usetex=True)
 
 
 # In[2]:
@@ -270,6 +275,7 @@ plot_distribution(model_priors.fit['sigma'][:,0,0], label='Prior')
 plot_distribution(model.fit['sigma'][:,0,0], label='Posterior')
 plot((sigma,sigma), (0,ylim()[1]*.5), 'k', label='True Value', linewidth=1)
 xlim(xmin=0)
+xscale('symlog')
 legend()
 title(r"$\sigma$")
 
@@ -287,7 +293,7 @@ title(r"$\sigma$")
 # - $\sigma \sim cauchy(0,4)$
 # - $\phi \sim normal(0,4)$
 
-# In[5]:
+# In[6]:
 
 phi = array([.5])
 p = len(phi)
@@ -327,7 +333,7 @@ for i in range(min(5,n)):
 # - $\sigma \sim cauchy(0,4)$
 # - $\phi \sim normal(0,4)$
 
-# In[6]:
+# In[7]:
 
 phi = array([.5, -.5])
 p = len(phi)
@@ -367,7 +373,7 @@ for i in range(min(5,n)):
 # - $\sigma \sim cauchy(0,4)$
 # - $\theta \sim normal(0,4)$
 
-# In[22]:
+# In[8]:
 
 theta = array([.1])
 q = len(theta)
@@ -409,7 +415,7 @@ for i in range(min(5,n)):
 # - $\sigma \sim cauchy(0,4)$
 # - $\theta \sim normal(0,4)$
 
-# In[ ]:
+# In[9]:
 
 theta = array([.7, .1])
 q = len(theta)
@@ -419,7 +425,7 @@ Y = mu+errs
 for i in range(1+q,t):
     Y[i] += dot(theta[::-1],errs[i-q:i])
 
-# Y[20:25] = nan
+Y[20:25] = nan
 
 
 model = TimeSeriesModel(Y=Y, q=q)
@@ -453,7 +459,7 @@ for i in range(min(5,n)):
 # - $\phi \sim normal(0,4)$
 # - $\theta \sim normal(0,4)$
 
-# In[ ]:
+# In[18]:
 
 phi = array([.8, -.2])
 p = len(phi)
@@ -466,7 +472,7 @@ Y = mu+errs
 for i in range(1+max(p,q),t):
     Y[i] += dot(phi[::-1],Y[i-p:i]) + dot(theta,errs[i-q:i])
 
-# Y[20:25] = nan
+Y[20:25] = nan
 
 model = TimeSeriesModel(Y=Y, p=p, q=q)
 start_time = time()
@@ -498,7 +504,7 @@ for i in range(min(5,n)):
 # - $\sigma \sim cauchy(0,4)$
 # - $\theta \sim normal(0,4)$
 
-# In[49]:
+# In[11]:
 
 theta = array([.1])
 q = len(theta)
@@ -542,7 +548,7 @@ for i in range(min(5,n)):
 # - $\sigma \sim cauchy(0,4)$
 # - $\theta \sim normal(0,4)$
 
-# In[88]:
+# In[12]:
 
 theta = array([.1])
 q = len(theta)
@@ -592,7 +598,7 @@ for i in range(min(5,n)):
 # - $\theta \sim normal(0,4)$
 # - $\nu \sim caucy(0,4)$
 
-# In[102]:
+# In[13]:
 
 nu = 3
 
@@ -642,7 +648,7 @@ for i in range(min(5,n)):
 # - $\tau \sim cauchy(0,1)$ (How much each parameter varies across the time series)
 # - $\Omega \sim LKJ(1)$ (How the parameters correlate with each other across the time series)
 
-# In[129]:
+# In[14]:
 
 mu_hat = 4
 sigma_hat = 1
@@ -713,7 +719,7 @@ for i in range(min(5,n)):
 # - $\mathbf{P} \sim normal(0,4)$
 # - $\vec{\theta} \sim normal(0,4)$
 
-# In[5]:
+# In[15]:
 
 D = 3
 
@@ -750,218 +756,4 @@ test_model_fit(model.fit, parameter_pairs)
 for i in range(min(5,n)):
     figure()
     plot_time_series_inference(model.fit, ind=i)
-
-
-# ARMA with Horsehoe Priors (Sparse Priors)
-# ====
-# TBD. Code below is from an earlier implementation that will be supplanted
-
-# In[42]:
-
-model_name = 'Y~ARMA, missing data, horseshoe priors'
-models[model_name] = {}
-
-
-models[model_name]['code'] = """
-
-data {
-
-    int T; // number of time steps
-    int K; // Number of time series
-    int<lower=0,upper=T-1> P; // Number of lags for AR element
-    int<lower=0,upper=T-1> Q; // Number of lags for MA element
-    
-    matrix[T, K] Y; // data to model
-        
-    // priors
-    real mu_prior_location;
-    real mu_prior_scale;
-    
-    real sigma_prior_location;
-    real sigma_prior_scale;
-    
-    vector[P] phi_prior_location;
-    vector[P] phi_prior_scale;
-    
-    real theta_prior_location;
-    real theta_prior_scale;
-
-    real expected_nonzero_phis_and_thetas;
-}
-
-transformed data {
-    int n_missing_observations;
-    n_missing_observations = 0;
-    for (k in 1:K){
-        for (t in 1:T){
-            if (is_nan(Y[t,k])){
-                n_missing_observations = n_missing_observations + 1;
-            }
-        }
-    }
-}
-
-parameters {
-    vector[K] mu;
-    vector<lower=0>[K] sigma; //scale of the errors
-    matrix[K,P] phi;
-    matrix<lower=-1, upper=1>[K,Q] theta;
-    
-    matrix<lower=0>[K,P+Q] lambda; //part of individual horseshoe shrinkage terms for the phis and thetas
-    
-    vector[n_missing_observations] latent_data;
-}
-
-transformed parameters {
-    vector<lower = 0>[K] tau; // horseshoe prior global shrinkage (one for each time series)
-    matrix<lower=0>[K,P+Q] regularized_horseshoe; //individual regularized horseshoe shrinkage terms for the phis and thetas
-    
-    matrix[T,K] Y_latent;
-    
-    {
-    int latent_data_counter;
-    latent_data_counter = 1;
-    
-    for (k in 1:K){
-        for (t in 1:T){
-            if (is_nan(Y[t,k])){
-                Y_latent[t,k] = latent_data[latent_data_counter];
-                latent_data_counter = latent_data_counter + 1;
-            } else{
-                Y_latent[t,k] = Y[t,k];
-            }
-        }
-    }
-    }
-    
-    {
-    real D; //Number of parameters on which the horseshoe is applied
-    
-    D = P+Q;
-    
-    // Define the horseshoe prior global shrinkage term based on the expected nonzero parameters
-    tau = (expected_nonzero_phis_and_thetas/(D-expected_nonzero_phis_and_thetas))
-            * (sigma / sqrt(T-1));
-    regularized_horseshoe = rep_matrix((tau .* tau), P+Q) .* (lambda .* lambda);
-    
-    //for (k in 1:K){
-    //    tau[k] = (expected_nonzero_phis_and_thetas/(P+Q-expected_nonzero_phis_and_thetas))
-    //            * (sigma[k]/sqrt(T-1));              
-    //    regularized_horseshoe[k] = tau[k]^2*lambda[k]^2;
-    //}
-    }
-}
-
-model {
-    matrix[T,K] err;
-    matrix[T,K] nu;
-    
-    mu ~ normal(mu_prior_location, mu_prior_scale);
-    sigma ~ cauchy(sigma_prior_location, sigma_prior_scale);
-    
-    for (k in 1:K){
-        lambda[k] ~ cauchy(0,1);
-    }
-    
-
-    for (k in 1:K){
-        for (p in 1:P){
-            phi[k,p] ~ normal(phi_prior_location[p],
-                            ((phi_prior_scale[p]*regularized_horseshoe[k,p])/
-                             (phi_prior_scale[p]+regularized_horseshoe[k,p]))
-                            );
-        }
-    }
-    
-    for (k in 1:K){
-        for (q in 1:Q){
-            theta[k,q] ~ normal(theta_prior_location,
-                            ((theta_prior_scale*regularized_horseshoe[k,q+P])/
-                             (theta_prior_scale+regularized_horseshoe[k,q+P]))
-                            );
-        }
-    }
-
-    
-    for (k in 1:K) {
-        nu[:,k] = rep_vector(mu[k], T);
-        
-        if (P>0){
-            if (P>1){
-                for (t in 2:P){
-                    nu[t,k] = nu[t,k] + phi[k,1:t-1]*Y_latent[1:t-1,k];
-                }
-            }
-            for (t in P+1:T){
-                nu[t,k] = nu[t,k] + phi[k]*Y_latent[t-P:t-1,k];
-                }
-            }
-        
-        err[:,k] = Y_latent[:,k] - nu[:,k];
-    
-        if (Q>0){
-            if (Q>1){
-                for (t in 2:Q){
-                    nu[t,k] = nu[t,k] + theta[k,1:t-1]*err[1:t-1, k];
-                    err[t,k] = Y_latent[t,k] - nu[t,k];
-                }
-            }
-            for (t in Q+1:T){
-                nu[t,k] = nu[t,k] + theta[k]*err[t-Q:t-1,k]; 
-                err[t,k] = Y_latent[t,k] - nu[t,k];
-                }
-        }
-    }
-        
-    for (k in 1:K){
-        err[max(P+1,Q+1):T,k] ~ normal(0, sigma[k]);
-    }
-}
-"""
-
-models[model_name]['stan_model'] = StanModel(model_code=models[model_name]['code'])
-
-models[model_name]['parameter_priors'] = {
-    'mu_prior_location': 0,
-    'mu_prior_scale': 4,
-    'sigma_prior_location': 0,
-    'sigma_prior_scale': 1,
-    'phi_prior_location': 0,
-    'phi_prior_scale': 1,
-    'theta_prior_location': 0,
-    'theta_prior_scale': 1,
-#     'beta_prior_location': 0,
-#     'beta_prior_scale': 1,
-    }
-
-models[model_name]['model_parameters'] = unique([i.split('_prior')[0] for i in models[model_name]['parameter_priors'].keys()])
-
-def stan_data_creator(Y, p=2, q=2, expected_nonzero_phis_and_thetas=1):    
-    stan_data = {'Y':Y,
-                 'T': Y.shape[0],
-                 'K': Y.shape[1],
-                 'P': p,
-                 'Q': q,
-                 'expected_nonzero_phis_and_thetas': expected_nonzero_phis_and_thetas,
-                }
-    stan_data = {**stan_data, **models[model_name]['parameter_priors']}
-    stan_data['phi_prior_location'] = array([stan_data['phi_prior_location'] for i in range(p)])
-    stan_data['phi_prior_scale'] = array([stan_data['phi_prior_scale'] for i in range(p)])
-    
-    return stan_data
-
-models[model_name]['stan_data_creator'] = stan_data_creator
-
-
-# In[69]:
-
-get_ipython().run_cell_magic('time', '', "n = 1\nt = 500\nsd = 1\nm = 3\nphi = .5\ntheta = 0.1\nerrs = pd.DataFrame(randn(t,n)*sd)\nY = pd.DataFrame(errs+m)\nfor i in Y.index[1:]:\n    Y.loc[i] += phi*Y.loc[i-1]+theta*errs.loc[i-1]\n# Y.iloc[3:5] = nan\nmodel_name = 'Y~ARMA, missing data, horseshoe priors'\nstan_data = models[model_name]['stan_data_creator'](Y,p=2,q=2)\nmodel_fit = models[model_name]['stan_model'].sampling(data=stan_data, n_jobs=n_jobs)#,iter=500)\n\nprint(parameter_within_95(model_fit, m, 'mu')/n)\nprint(parameter_within_95(model_fit, sd, 'sigma')/n)\nprint(parameter_within_95(model_fit, phi, 'phi')/n)\nprint(parameter_within_95(model_fit, theta, 'theta')/n)\nprint(allclose(_summary(model_fit)['summary'][:,-1], 1, atol=.1))\n\n# print(model_fit)\n\n# for i in arange(n):\n#     figure()\n#     plot_time_series_inference(model_fit, ind=i)\n#     xlim(0,10)\n#     ylim(0,60)")
-
-
-# In[67]:
-
-for i in range(4):
-    figure()
-    hist(q[i],bins=50, normed=True)
-    xlim(0,200)
 
